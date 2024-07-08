@@ -39,11 +39,6 @@ pub struct RowsEncoded {
 }
 
 fn checks(offsets: &[usize]) {
-    assert_eq!(
-        std::mem::size_of::<usize>(),
-        std::mem::size_of::<i64>(),
-        "only supported on 64bit arch"
-    );
     assert!(
         (*offsets.last().unwrap() as u64) < i64::MAX as u64,
         "overflow"
@@ -54,7 +49,7 @@ unsafe fn rows_to_array(buf: Vec<u8>, offsets: Vec<usize>) -> BinaryArray<i64> {
     checks(&offsets);
 
     // SAFETY: we checked overflow
-    let offsets = bytemuck::cast_vec::<usize, i64>(offsets);
+    let offsets = offsets.iter().map(|&x| x as i64).collect();
 
     // SAFETY: monotonically increasing
     let offsets = Offsets::new_unchecked(offsets);
